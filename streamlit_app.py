@@ -58,7 +58,7 @@ def scrape_conference_website_tool(url: str) -> str:
         driver.get(url)
         time.sleep(5)
 
-        for text in ['Full Schedule', 'Agenda', 'Program', 'Schedule', 'Sessions']:
+        for text in ['Full Schedule', 'Agenda', 'Conference', 'Program', 'Presentation', 'Schedule', 'Session', 'Sessions']:
             try:
                 link = driver.find_element(By.PARTIAL_LINK_TEXT, text)
                 link.click()
@@ -181,7 +181,7 @@ def table_tool(info: list[dict]):
     section.orientation = WD_ORIENT.LANDSCAPE
     section.page_width, section.page_height = section.page_height, section.page_width
 
-    table = document.add_table(rows = len(info)+1, cols = 8)
+    table = document.add_table(rows = len(info)+1, cols = 7)
     set_table_border(table)
 
     hdr_cells = table.rows[0].cells
@@ -191,8 +191,7 @@ def table_tool(info: list[dict]):
     hdr_cells[3].text = 'City/State'
     hdr_cells[4].text = 'Title of Presentation'
     hdr_cells[5].text = 'Date, Time, and Location'
-    hdr_cells[6].text = 'Biography'
-    hdr_cells[7].text = 'LinkedIn Profile'
+    hdr_cells[6].text = 'LinkedIn Profile'
 
     for i, dict in enumerate(info):
         row_cells = table.rows[i+1].cells
@@ -202,12 +201,11 @@ def table_tool(info: list[dict]):
         row_cells[3].text = dict.get('city_state') or ''
         row_cells[4].text = dict.get('title') or ''
         row_cells[5].text = dict.get('dtl') or ''
-        row_cells[6].text = dict.get('bio') or ''
         linkedin_url = dict.get('linkedin_url') or ''
         if linkedin_url and linkedin_url != 'N/A':
-            add_hyperlink(row_cells[7].paragraph[0], linkedin_url, 'LinkedIn Profile')
+            add_hyperlink(row_cells[6].paragraph[0], linkedin_url, 'LinkedIn Profile')
         else:
-            row_cells[7].text = 'N/A'
+            row_cells[6].text = 'N/A'
 
     document.save('table.docx')
     return 'Table successfully created!'
@@ -358,6 +356,7 @@ def main():
                     raise Exception(f'Tavily failed: {url}')
                 
                 scraped_text = tools_dict['scrape_conference_website_tool'].invoke({'url': url})
+                print(scraped_text[:1000])
                 prompt = f'''
 You are a skilled research assistant. Extract sessions related to "{interest}" from the {conf} pharmaceutical conference.
 
